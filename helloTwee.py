@@ -30,3 +30,14 @@ api = tweepy.API(auth)
 # API.get_status(id[, trim_user][, include_my_retweet][, include_entities][, include_ext_alt_text][, include_card_uri])
 # Returns a single status specified by the ID parameter.
 
+# -------------------------------------------------------
+
+# Help Methods
+# API.search(q[, geocode][, lang][, locale][, result_type][, count][, until][, since_id][, max_id][, include_entities])
+# Returns a collection of relevant Tweets matching a specified query.
+
+# Trends Methods
+# API.trends_available()
+# Returns the locations that Twitter has trending topic information for. The response is an array of “locations” that encode the location’s WOEID (a Yahoo! Where On Earth ID) and some other human-readable information such as a canonical name and country the location belongs in.
+
+
