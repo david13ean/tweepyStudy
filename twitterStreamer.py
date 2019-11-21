@@ -2,10 +2,51 @@ import tweepy
 import json
 
 class MyStreamListener(tweepy.StreamListener):
-
     def on_status(self, status):
-        print(status.text)
+        if status.retweeted:
+            return
 
+        description = status.user.description
+        loc = status.user.location
+        text = status.text
+        coords = status.coordinates
+        geo = status.geo
+        name = status.user.screen_name
+        user_created = status.user.created_at
+        followers = status.user.followers_count
+        id_str = status.id_str
+        created = status.created_at
+        retweets = status.retweet_count
+        bg_color = status.user.profile_background_color
+        blob = TextBlob(text)
+        sent = blob.sentiment
+        print (text)
+
+        if geo is not None:
+            geo = json.dumps(geo)
+
+        if coords is not None:
+            coords = json.dumps(coords)  
+                                           
+        table = db[settings.TABLE_NAME]
+        try:
+            table.insert(dict(
+               user_description=description,
+               user_location=loc,
+               coordinates=coords,
+               text=text,
+               geo=geo,
+               user_name=name,
+               user_created=user_created,
+               user_followers=followers,
+               id_str=id_str,
+               created=created,
+               retweet_count=retweets,
+               user_bg_color=bg_color,
+               polarity=sent.polarity,
+               subjectivity=sent.subjectivity,
+            ))
+    
     def on_error(self, status_code):
         if status_code == 420:
             #returning False in on_error disconnects the stream
@@ -29,13 +70,16 @@ def main():
 
     tlists = api.lists_all()
     data = tlists
-
-    data = api.get_list(list_id=34179516)
-    data = api.list_members(list_id=34179516)
-    print(data)
-    with open('data.txt', 'w') as outfile:
-        for t in tlists:
-            outfile.write('%s\n' % t)
+    print(len(data))
+    # data = api.get_list(list_id=34179516)
+    
+    data = api.list_members(list_id=34179516, cursor=-1)
+    # for member in data:
+    #     print(member)
+    print(len(data))
+    # with open('data.txt', 'w') as outfile:
+    #     for t in tlists:
+    #         outfile.write('%s\n' % t)
     # Help Methods
     # api.search(q[, geocode][, lang][, locale][, result_type][, count][, until][, since_id][, max_id][, include_entities])
     # Returns a collection of relevant Tweets matching a specified query.
@@ -47,7 +91,7 @@ def main():
 
     # myStreamListener = MyStreamListener()
     # myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
-    # myStream.filter(track=["15675138"])
+    # myStream.filter(track=["programming"])
 
     # writeToFile(data)
 
