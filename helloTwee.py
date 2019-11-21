@@ -13,6 +13,7 @@ class MyStreamListener(tweepy.StreamListener):
 
 def writeToFile(fileText):
     with open('data.json', 'w') as outfile:
+        # outfile.truncate(0)
         json.dump(fileText, outfile)
 
 def main():
@@ -26,20 +27,29 @@ def main():
 
     # -------------------------------------------------------
 
+    tlists = api.lists_all()
+    data = tlists
+
+    data = api.get_list(list_id=34179516)
+    data = api.list_members(list_id=34179516)
+    print(data)
+    with open('data.txt', 'w') as outfile:
+        for t in tlists:
+            outfile.write('%s\n' % t)
     # Help Methods
     # api.search(q[, geocode][, lang][, locale][, result_type][, count][, until][, since_id][, max_id][, include_entities])
     # Returns a collection of relevant Tweets matching a specified query.
 
     # Trends Methods
     # Returns the locations that Twitter has trending topic information for. The response is an array of “locations” that encode the location’s WOEID (a Yahoo! Where On Earth ID) and some other human-readable information such as a canonical name and country the location belongs in.
-    trends = api.trends_available()
+    # data = api.trends_available()
     # print(trends)
 
     # myStreamListener = MyStreamListener()
     # myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
     # myStream.filter(track=["15675138"])
 
-    writeToFile(trends)
+    # writeToFile(data)
 
 if __name__ == '__main__':
     main()
