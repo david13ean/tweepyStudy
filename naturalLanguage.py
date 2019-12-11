@@ -1,6 +1,7 @@
 import pymongo
 import numpy as np 
 import pandas as pd 
+import json
 import re
 import matplotlib.pyplot as plt
 from nltk.tokenize import TweetTokenizer
@@ -20,17 +21,9 @@ df['quoted_tokenized_tweet'] = df['quoted_text'].apply(tt.tokenize)
 
 sid = SentimentIntensityAnalyzer()
 df['tweet_polarity'] = df['text'].apply(sid.polarity_scores)
+df['quoted_tweet_polarity'] = df['quoted_text'].apply(sid.polarity_scores)
 
-print(df.loc[0])
-# for col in df.columns:
-#     print(df[col])
-#     count = count - 1
-#     print(count)
-#     # if count <= 0:
-#     #     break
-
-# for doc in mycol.find():
-#     print (doc)
-#     count = count - 1
-#     if count <= 0:
-#         break
+# print(df.loc[0])
+newcol = mydb["sentiment"]
+# records = json.loads(df.T.to_json()).values()
+mydb.newcol.insert_many(df.to_dict('records'))
