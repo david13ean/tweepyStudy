@@ -19,14 +19,59 @@ class MyStreamListener(tweepy.StreamListener):
     def on_status(self, status):
         if not hasattr(status, 'quoted_status'):
             return
+
+        retweeted = False
+        if hasattr(status, 'retweeted_status'):
+            retweeted = True
+
+        # if status.in_reply_to_status_id is not None:
+        #     # Tweet is a reply
+        #     with open('environment.json', 'r') as myfile:
+        #         env=json.loads(myfile.read())
+
+        #     auth = tweepy.OAuthHandler(env['consumer_key'], env['consumer_secret'])
+        #     auth.set_access_token(env['access_token'], env['access_token_secret'])
+
+        #     api = tweepy.API(auth)
+        #     try:
+        #         reply_status = api.get_status(status.in_reply_to_status_id, tweet_mode="extended")
+        #         try:
+        #             reply_text = reply_status.retweeted_status.full_text
+        #             print("replied to was extended tweet")
+        #         except AttributeError:
+        #             reply_text = reply_status.full_text
+        #         reply_description = reply_status.user.description
+        #         reply_loc = reply_status.user.location
+        #         reply_coords = reply_status.coordinates
+        #         reply_geo = reply_status.geo
+        #         reply_name = reply_status.user.screen_name
+        #         reply_user_created = reply_status.user.created_at
+        #         reply_followers = reply_status.user.followers_count
+        #         reply_id_str = reply_status.id_str
+        #         reply_created = reply_status.created_at
+        #         reply_retweets = reply_status.retweet_count
+        #     except:
+        #         return
+        # else:
+        #     # Tweet is not a reply
+        #     return
+            
         myclient = pymongo.MongoClient("mongodb://localhost:27017/")
         mydb = myclient["twitter"]
-        # mycol = mydb["quoted_tweets"]
-        mycol = mydb["junk"]
+        mycol = mydb["test"]
+        
+        try:
+            text = status.extended_tweet["full_text"]
+        except AttributeError:
+            text = status.text
+        
+        try:
+            quoted_text = status.quoted_status.extended_tweet["full_text"]
+        except AttributeError:
+            quoted_text = status.quoted_status.text
 
         description = status.user.description
         loc = status.user.location
-        text = status.text
         coords = status.coordinates
         geo = status.geo
         name = status.user.screen_name
@@ -40,7 +85,6 @@ class MyStreamListener(tweepy.StreamListener):
         # sent = blob.sentiment
 
         quoted_description = status.quoted_status.user.description
-        quoted_text = status.quoted_status.text
         quoted_name = status.quoted_status.user.screen_name
         quoted_user_created = status.quoted_status.user.created_at
         quoted_followers = status.quoted_status.user.followers_count
@@ -68,7 +112,8 @@ class MyStreamListener(tweepy.StreamListener):
                 followers = followers, 
                 id_str = id_str, 
                 created = created, 
-                retweets = retweets, 
+                retweets = retweets,
+                retweeted = retweeted,
                 quoted_description = quoted_description, 
                 quoted_text = quoted_text, 
                 quoted_name = quoted_name, 
@@ -78,6 +123,18 @@ class MyStreamListener(tweepy.StreamListener):
                 quoted_created = quoted_created, 
                 quoted_retweets = quoted_retweets
             )
+
+                # reply_text = reply_text,
+                # reply_description = reply_description,
+                # reply_loc = reply_loc,
+                # reply_coords = reply_coords,
+                # reply_geo = reply_geo,
+                # reply_name = reply_name,
+                # reply_user_created = reply_user_created,
+                # reply_followers = reply_followers,
+                # reply_id_str = reply_id_str,
+                # reply_created = reply_created,
+                # reply_retweets = reply_retweets,
         )
         
 
@@ -126,8 +183,8 @@ def main():
 
     myStreamListener = MyStreamListener()
     myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
-    myStream.filter(track=["impeachment"])
-
+    # myStream.filter(track=["wildfire","australia","bushfire","NSWfires","NSWfire","pyrocumulonimbus"])
+    myStream.filter(track=["nlwx","stormageddon2020","nlweather","nlblizzard"]) 
     # writeToFile(data)
 
 if __name__ == '__main__':
