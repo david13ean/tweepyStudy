@@ -8,12 +8,24 @@ from textblob import TextBlob
 from sqlalchemy.exc import ProgrammingError
 
 class MyStreamListener(tweepy.StreamListener):
-    def __init__(self, db, col):
-        self.db = db
-        self.col = col
-        print(col)
+    db = "twitter"
+    col = "test"
 
-    def on_status(self, status, db, col):
+    def getRetweeted(self, status):
+        if hasattr(status, 'retweeted_status'): return True
+        else: return False
+    
+    def getGeo(self, status):
+        if status.geo is not None:
+            return json.dumps(status.geo)
+        else: return ""
+
+    def getCoords(self, status):
+        if status.coordinates is not None:
+            return json.dumps(status.coordinates)
+        else: return ""
+
+    def on_status(self, status):
         with open('environment.json', 'r') as myfile:
             env=json.loads(myfile.read())
 
@@ -22,23 +34,18 @@ class MyStreamListener(tweepy.StreamListener):
 
         api = tweepy.API(auth)
         myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-        mydb = myclient[db]
-        mycol = mydb[col+"g"]
+        mydb = myclient[self.db]
+        mycol = mydb[self.col+"g"]
 
-        geo = ""
-        coords = ""
-        retweeted = False
-        if hasattr(status, 'retweeted_status'):
-            retweeted = True
-
-        if status.geo is not None:
-            geo = json.dumps(geo)
-
-        if status.coordinates is not None:
-            coords = json.dumps(coords)
+        geo = self.getGeo(status)
+        coords = self.getCoords(status)
+        retweeted = self.getRetweeted(status)
 
         if hasattr(status, 'quoted_status'):
-            mycol = mydb[col+"q"]
+            if status.in_reply_to_status_id is not None:
+                mycol = mydb[self.col+"qr"]
+            else:   
+                mycol = mydb[self.col+"q"]
             
             try:
                 text = status.extended_tweet["full_text"]
@@ -99,7 +106,7 @@ class MyStreamListener(tweepy.StreamListener):
 
         if status.in_reply_to_status_id is not None:
             # Tweet is a reply
-            mycol = mydb[col+"r"]
+            mycol = mydb[self.col+"r"]
             try:
                 reply_status = api.get_status(status.in_reply_to_status_id, tweet_mode="extended")
                 try:
@@ -189,7 +196,9 @@ def main():
     auth.set_access_token(env['access_token'], env['access_token_secret'])
 
     api = tweepy.API(auth)
-    myStreamListener = MyStreamListener(sys.argv[1],sys.argv[2])
+    myStreamListener = MyStreamListener()
+    myStreamListener.db = sys.argv[1]
+    myStreamListener.col = sys.argv[2]
     myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
     # myStream.filter(track=["wildfire","australia","bushfire","NSWfires","NSWfire","pyrocumulonimbus"])
     myStream.filter(track=["coronavirus","COVID-19"]) 

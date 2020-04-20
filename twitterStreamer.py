@@ -58,7 +58,7 @@ class MyStreamListener(tweepy.StreamListener):
             
         myclient = pymongo.MongoClient("mongodb://localhost:27017/")
         mydb = myclient["twitter"]
-        mycol = mydb["test"]
+        mycol = mydb["coronavirus"]
         
         try:
             text = status.extended_tweet["full_text"]
@@ -184,7 +184,7 @@ def main():
     myStreamListener = MyStreamListener()
     myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
     # myStream.filter(track=["wildfire","australia","bushfire","NSWfires","NSWfire","pyrocumulonimbus"])
-    myStream.filter(track=["nlwx","stormageddon2020","nlweather","nlblizzard"]) 
+    myStream.filter(track=["coronavirus"]) 
     # writeToFile(data)
 
 if __name__ == '__main__':
